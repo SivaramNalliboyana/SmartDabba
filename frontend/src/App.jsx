@@ -45,7 +45,7 @@ function Toast({ event }) {
 }
 
 export default function App() {
-  const { state, connected, lastEvent, simulate, reorder } = useDabbaSocket();
+  const { state, connected, lastEvent, reorder } = useDabbaSocket();
 
   return (
     <div className="min-h-full">
@@ -54,7 +54,7 @@ export default function App() {
 
         <main className="mt-6 grid grid-cols-1 lg:grid-cols-3 gap-5">
           <div className="lg:col-span-2 space-y-5">
-            <StatusPanel state={state} onSimulate={simulate} />
+            <StatusPanel state={state} />
             <WeeklyGrid week={state?.week ?? []} />
             <PharmacyCard
               pharmacy={state?.pharmacy}

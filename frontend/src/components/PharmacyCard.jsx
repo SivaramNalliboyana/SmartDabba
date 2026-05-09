@@ -1,5 +1,36 @@
 import React, { useState } from "react";
 
+const FLYING_PILLS = [
+  { dx: -42, rz: -22, delay: 0 },
+  { dx: -18, rz: -8, delay: 80 },
+  { dx: 8, rz: 6, delay: 160 },
+  { dx: 32, rz: 18, delay: 240 },
+  { dx: 54, rz: 28, delay: 320 },
+];
+
+function FlyingPills() {
+  return (
+    <div
+      className="pointer-events-none absolute left-1/2 bottom-20 z-10"
+      aria-hidden
+    >
+      {FLYING_PILLS.map((p, i) => (
+        <span
+          key={i}
+          className="absolute inline-flex h-5 w-8 items-center justify-center rounded-full bg-gradient-to-r from-indigo-500 to-pink-500 shadow-md animate-flyOff"
+          style={{
+            "--dx": `${p.dx}px`,
+            "--rz": `${p.rz}deg`,
+            animationDelay: `${p.delay}ms`,
+          }}
+        >
+          <span className="h-1 w-5 rounded-full bg-white/70" />
+        </span>
+      ))}
+    </div>
+  );
+}
+
 const STATUS_META = {
   confirmed: {
     label: "Confirmed",
@@ -25,6 +56,7 @@ export default function PharmacyCard({
   onReorder,
 }) {
   const [busy, setBusy] = useState(false);
+  const [flying, setFlying] = useState(0);
   if (!pharmacy) return null;
 
   const activeOrder = orders.find((o) => o.status !== "delivered");
@@ -36,10 +68,15 @@ export default function PharmacyCard({
 
   async function refillAllLow() {
     setBusy(true);
+    setFlying((k) => k + 1);
     try {
-      for (const m of lowMeds) {
+      // Let the flying-pill animation play, then stagger orders for visual rhythm.
+      await new Promise((r) => setTimeout(r, 350));
+      for (let i = 0; i < lowMeds.length; i++) {
         // eslint-disable-next-line no-await-in-loop
-        await onReorder(m.id);
+        await onReorder(lowMeds[i].id);
+        // eslint-disable-next-line no-await-in-loop
+        await new Promise((r) => setTimeout(r, 250));
       }
     } finally {
       setBusy(false);
@@ -47,7 +84,8 @@ export default function PharmacyCard({
   }
 
   return (
-    <section className="rounded-3xl bg-white/80 backdrop-blur ring-1 ring-slate-200 shadow-sm p-6">
+    <section className="relative overflow-hidden rounded-3xl bg-white/80 backdrop-blur ring-1 ring-slate-200 shadow-sm p-6">
+      {flying > 0 && <FlyingPills key={flying} />}
       <div className="flex items-center justify-between">
         <div>
           <div className="text-xs font-semibold uppercase tracking-wider text-slate-500">
@@ -126,7 +164,7 @@ export default function PharmacyCard({
               className="flex-1 rounded-xl bg-gradient-to-r from-indigo-600 to-pink-600 text-white px-3 py-2 text-xs font-semibold shadow-sm hover:opacity-95 active:scale-[0.99] disabled:opacity-40 disabled:hover:opacity-40 disabled:cursor-not-allowed transition"
             >
               {busy
-                ? "Sending requests…"
+                ? "Sending to pharmacist…"
                 : lowMeds.length > 0
                   ? `Order all (${lowMeds.length})`
                   : "Nothing to reorder"}

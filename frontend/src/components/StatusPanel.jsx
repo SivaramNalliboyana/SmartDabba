@@ -32,7 +32,7 @@ function bucketSchedule(schedule) {
   return buckets;
 }
 
-export default function StatusPanel({ state, onSimulate }) {
+export default function StatusPanel({ state }) {
   const taken = state?.todayStats?.taken ?? 0;
   const total = state?.todayStats?.total ?? 0;
   const allDone = state?.todayStats?.allDone;
@@ -48,10 +48,16 @@ export default function StatusPanel({ state, onSimulate }) {
       ? "Morning Routine Complete"
       : "Awaiting First Dose";
 
+  const nextLabel = nextDose
+    ? nextDose.isTomorrow
+      ? `tomorrow at ${formatTime(nextDose.scheduledTime)}`
+      : `at ${formatTime(nextDose.scheduledTime)}`
+    : "the scheduled time";
+
   const description = allDone
-    ? "Your parent has taken every scheduled dose today. No more doses remaining."
+    ? `Your parent has taken every scheduled dose today. Next dose is ${nextLabel}.`
     : hasTakenSomething
-      ? `Your parent has successfully taken their morning medication. Next dose is at ${nextDose ? formatTime(nextDose.scheduledTime) : "the scheduled time"}.`
+      ? `Your parent has successfully taken their morning medication. Next dose is ${nextLabel}.`
       : "The smart dispenser is ready. Awaiting the first dose of the day.";
 
   return (
@@ -168,28 +174,13 @@ export default function StatusPanel({ state, onSimulate }) {
             <InfoBox
               label="Next Scheduled"
               value={
-                allDone
-                  ? "Done"
-                  : nextDose
-                    ? formatTime(nextDose.scheduledTime)
-                    : "—"
+                nextDose
+                  ? nextDose.isTomorrow
+                    ? `Tomorrow ${formatTime(nextDose.scheduledTime)}`
+                    : formatTime(nextDose.scheduledTime)
+                  : "—"
               }
             />
-          </div>
-
-          <div className="mt-5 flex flex-wrap justify-center sm:justify-start gap-2">
-            <button
-              onClick={() => onSimulate("opened")}
-              className="rounded-full bg-slate-900 px-4 py-2 text-xs font-medium text-white hover:bg-slate-800 active:scale-[0.98] transition"
-            >
-              Simulate: lid opened
-            </button>
-            <button
-              onClick={() => onSimulate("closed")}
-              className="rounded-full bg-white px-4 py-2 text-xs font-medium text-slate-700 ring-1 ring-slate-300 hover:bg-slate-50 active:scale-[0.98] transition"
-            >
-              Simulate: lid closed
-            </button>
           </div>
         </div>
       </div>
