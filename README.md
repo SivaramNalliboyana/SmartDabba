@@ -4,6 +4,10 @@ A real-time dashboard for a smart pill box. An ESP32 with a hall sensor watches 
 lid; when the magnet moves away (lid opened) it pings the backend, which fans the
 event out over WebSockets to every connected child / family dashboard.
 
+## Demo
+
+![SmartDabba dashboard alongside the ESP32 + magnet sensor rig](./demo.png)
+
 ## Stack
 
 - **Frontend**: React + Vite + Tailwind
